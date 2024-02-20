@@ -8,4 +8,10 @@
   ```
   sudo apt-get install libsfml-dev
   ```
+* Ajouter le dossier Audio_SFML dans
+  `/home/me`
+* Ajouter la ligne dans le fichier `task.json`
+  ```
+  "-lsfml-audio"
+  ```
 * 
