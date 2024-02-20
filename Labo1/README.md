@@ -11,7 +11,7 @@
   ```
 * Ajouter le dossier Audio_SFML dans
   `/home/"your_user"`
-* Ajouter la ligne dans le fichier
+* Ajouter les lignes dans le fichier
    `task.json`
   ```
   "-pthread",
