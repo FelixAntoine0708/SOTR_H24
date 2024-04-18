@@ -1,4 +1,12 @@
-![alt text](C:\Users\Utilisateur\Pictures\logo_duck.jpg)
+![duck_logo](https://github.com/FelixDuck15/SOTR_H24/assets/89605334/5c092b82-f930-4e5f-bd92-b89e0f68a90b)
+
+> Fait par: Félix-Antoine Guimont <br>
+> Date: 18 avril 2024 <br>
+> ISO: Linux <br>
+> Logiciel: VSCode <br>
+> Brief: Le code sert à faire bouger un robot dans une map prédéfini. Il y a 4 modes. Le premier est la statue, le deuxième est le control, <br>
+> le troisième est le Kamikaze et le dernier est le Roomba. <br>
+
 
 # Comment fonctionne le labo 3 et 4
 
