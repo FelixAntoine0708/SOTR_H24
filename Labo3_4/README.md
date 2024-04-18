@@ -7,10 +7,7 @@
 > Brief: Le code sert à faire bouger un robot dans une map prédéfini. Il y a 4 modes. Le premier est la statue, le deuxième est le control, <br>
 > le troisième est le Kamikaze et le dernier est le Roomba. <br>
 
-
-# Comment fonctionne le labo 3 et 4
-
-## Créer un package
+# Créer un package
 
 * Aller dans le dossier `catkin_ws/src`
 ```
@@ -43,7 +40,7 @@ catkin_make
 source /devel/setup.bash 
 ```
 
-## Faire fonctionner le code
+# Faire fonctionner le code
 * Prener le dossier et metter le dans dossier Documents
 ```
 cd ~/Documents
