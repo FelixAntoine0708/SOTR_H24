@@ -61,14 +61,14 @@ class Deck:
         print("retrieving all plane before going")
         self.land_plane(plane_number)    # fait atterir si on arrete le programme
 
-    def add_plane_to_queue():   
-        global plane_number
+    def add_plane_to_queue(self): 
+        global plane_number  
         plane_number += 1   # ajoute 1 avions
         planes_to_launch.append(plane_number)  # ajout d'en la liste 
         print(f"Plane {plane_number} is waiting to launch.")
         s(0.2)
 
-    def erase_from_queue(listing, value):
+    def erase_from_queue(self, listing, value):
         new_list = []  # fait une nouvelle list
         for element in listing: 
             if element != value:    # si element est pas lui dans la liste 
@@ -76,31 +76,39 @@ class Deck:
         return new_list #retourne la nouvelle liste
 
 
-def processDeck():
-    deck= Deck
-    launch_thread = Thread(target=deck.launch_loop, args=()) # initiation du thread de verification des avions
-    launch_thread.start()   # debut du thread
+class Main(Deck):
+    global stop
+
+    def processDeck(self):
+        # launch_thread = Thread(target=self.launch_loop) # initiation du thread de verification des avions
+        # launch_thread.start()   # debut du thread
+        while stop:
+            self.launch_loop()
+            s(0.1)
 
 
-# MAIN
-if __name__ == '__main__':
-    deck= Deck
-    process1 = Process(target=processDeck, args=()) # initiation d'un process du Deck
-    process1.start()    # debut le process
+    def main(self):
+        process1 = Process(target=self.processDeck) # initiation d'un process du Deck
+        process1.start()    # debut le process
 
-    while True:
+        while True:
 
-        if keyboard.is_pressed('l'):    # si "l" press
-            deck.add_plane_to_queue()    # ajoute 1 avion a la liste de decollage
+            if keyboard.is_pressed('l'):    # si "l" press
+                self.add_plane_to_queue()    # ajoute 1 avion a la liste de decollage
 
-        elif keyboard.is_pressed('r'):  # si "r" press
-            deck.land_plane(plane_number)    # fait atterir tout les avions
+            elif keyboard.is_pressed('r'):  # si "r" press
+                self.land_plane(plane_number)    # fait atterir tout les avions
 
-        elif keyboard.is_pressed('q'):  # si "q" press
-            break   # sort du while
+            elif keyboard.is_pressed('q'):  # si "q" press
+                break   # sort du while
 
-        s(0.2)
+            s(0.1)
 
-    # si "q" a ete press
-    process1.terminate()    # supprime le process
-    stop = False    # arrete le while 
+        # si "q" a ete press
+        process1.terminate()    # supprime le process
+        stop = False    # arrete le while 
+
+Object1 = Deck()
+Object2 = Main()
+
+Object2.main()
