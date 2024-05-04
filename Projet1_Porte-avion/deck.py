@@ -1,3 +1,9 @@
+"""
+Author: Félix-Antoine Guimont & Carl-Dominic Aubin
+Date: 15 avril 2024
+Description: Simulation d'un porte-avion commande par des touches de clavier
+"""
+
 from threading import Thread, Semaphore
 from multiprocessing import Process, Queue
 import keyboard
