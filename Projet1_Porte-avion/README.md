@@ -31,6 +31,10 @@ Vous devez aussi installer python si ce n'est pas déjà fait, voir le tutoriel 
 $ sudo apt-get update
 $ sudo apt-get install python3
 
+Autre installation pour la progress bar
+
+$ pip install tqdm
+
 ### Hardware
 
 Ordinateur/laptop recommandation : 
