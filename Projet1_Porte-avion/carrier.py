@@ -5,21 +5,24 @@ Description: Simulation d'un porte-avion commande par des touches de clavier
 """
 
 ##############IMPORT##############
+import multiprocessing.process
 import time
 import threading
 import multiprocessing
-import sys, select, termios, tty
+import os
 import keyboard
-import random
-
-from plane import Plane, PlaneStates
+from random import randint
+import deck
 from ctypes import c_bool
 
 ##############GLOBAL##############
 VALID_COMMANDS = {'l', 'r', 's', '1', '2', '3', '4', 'v', 'q'}
 goodKey = ''
 catapulte_D_AV = True
+catapulte_D_AV2 = True
 catapulte_DA_CO = True
+catapulte_DA_CO2 = True
+planeIndentity = {}
 
 ##############FONCTION##############
 def getRekt():
@@ -38,7 +41,7 @@ def dashboard():
     enteredKeys = ""
     keys = ""
     
-    while True :
+    while deck.CatapultQueue["stop"]: 
         
         if(keyboard.read_key()):
             keys = keyboard.read_key()
@@ -49,6 +52,7 @@ def dashboard():
             if len(enteredKeys) == 1:
                 if(enteredKeys in VALID_COMMANDS):
                     goodKey = enteredKeys
+                    deck.Deck.listener_plane(deck.Deck, enteredKeys)
                     enteredKeys = ""
                 else:
                     enteredKeys = ""
@@ -59,86 +63,63 @@ def dashboard():
                 getRekt()
                 printKey()
                 
-        time.sleep(0.01)    
- 
-def logiqueOperation():
-    
-    global goodKey
-    global catapulte_D_AV
-    global catapulte_DA_CO
-    
-    avion = 1
-    
-    while 1:
-        
-        if goodKey == '1': #ferme catapulte avant, (peut seuelemnt décoler)
-            catapulte_D_AV = False
+        time.sleep(0.01)
 
-        if goodKey == '2': #ouvre catapulte avant, (peut seulement décoler)
-            catapulte_D_AV = True
+def catapult_available():
+        print("________________________________________\n")
+        print("Catapultes disponibles :")
+            
+        if(deck.CatapultQueue["catapulte_D_AV"]):
+            print("Catapulte avant #1")
 
-        if goodKey == '3': #ferme catapulte cote, (peut décoler et attérir, si false ne peut pas attérir)
-            catapulte_DA_CO = False
+        if(deck.CatapultQueue["catapulte_D_AV2"]):
+            print("Catapulte avant #2")
             
-        if goodKey == '4': #ouvre catapulte cote, (peut décoler et attérir, si false ne peut pas attérir)
-            catapulte_DA_CO = True         
-            
-        if goodKey == 'v': #display catapultes states
-            
-            print("________________________________________\n")
-            print("Catapultes disponibles :")
-            
-            if(catapulte_DA_CO == True): 
-                print("- Catapulte de côté")
-            
-            if(catapulte_D_AV == True):
-                print("- Catapulte avant")
+        if deck.CatapultQueue["catapulte_DA_CO"]: 
+            print("Catapulte de côté # 3")
+
+        if deck.CatapultQueue["catapulte_DA_CO2"]: 
+            print("Catapulte de côté # 4")
                 
-            if(catapulte_D_AV == False) & (catapulte_DA_CO == False):
-                print("- Aucune")
+        if not deck.CatapultQueue["catapulte_D_AV"] and not deck.CatapultQueue["catapulte_D_AV2"] and not deck.CatapultQueue["catapulte_DA_CO"] and not deck.CatapultQueue["catapulte_DA_CO2"]:
+            print("- Aucune")
 
-        if goodKey == 's':
-            print("________________________________________\n")
-            print("\nAvion numéro : ", avion ,"\tIdentifiant de vol : ", identifierAvion(avion))
-            avion += 1
-            
-        goodKey = ""
-        time.sleep(0.01)   
-         
-        
-def tourControle():
-    
-    global settings
-    
+def identifierAvion(NOavion, key):
+    global planeIndentity
+
+    if key == '':
+        number = randint(1, 999)
+        result = (NOavion * number) %1000
+        planeIndentity[NOavion] = result
+
+    if key == 'r':
+        planeIndentity.pop(NOavion)
+
+    if key == 's':
+        os.system('clear')
+        for x in range(len(planeIndentity)):
+            print(f"Plane {x+1}, Indentity {planeIndentity[x+1]}")
+              
+def tourControle():    
     t1 = threading.Thread(target=dashboard)
-    t2 = threading.Thread(target=logiqueOperation)
-    
     t1.start()
-    t2.start()
-    
     t1.join()
-    t2.join()
 
-#def gererCatapulte():
-    
-    #global semaphore1
-    #global semaphore2
-    
-    #semaphore1 = multiprocessing.Semaphore(1)
-    #semaphore2 = multiprocessing.Semaphore(1)
-    
-def identifierAvion(NOavion):
-    result = (NOavion * 33) % 1000
-    return result
+def pont():
+    t2 = threading.Thread(target=deck.Deck.launch_loop, args=(deck.Deck, ))
+    t2.start()
+
 
 if __name__ == "__main__":
-    
+    os.system('clear')
     printKey()
     
     mp1 = multiprocessing.Process(target=tourControle)
+    mp2 = multiprocessing.Process(target=pont)
     #mp2 = multiprocessing.Process(target=gererCatapulte, args=semaphore1) #ajouter 2 arg pour la sémaphore
     
     mp1.start()
+    mp2.start()
     #mp2.start()
     
     mp1.join()
