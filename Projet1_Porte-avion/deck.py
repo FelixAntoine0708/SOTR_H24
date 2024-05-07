@@ -242,8 +242,9 @@ class Deck():
             os.system('clear')
             #if CatapultQueue["catapulte_D_AV"]  and CatapultQueue["catapulte_D_AV2"] and CatapultQueue["catapulte_DA_CO"] and CatapultQueue["catapulte_DA_CO2"]:
             if plane_number > 0:
+                print("Program will be exited after all planes are landed")
                 self.land_plane(self)
                 CatapultQueue["stop"]  = False
-                print("Mission succesful - The two towers are down")
             else:
-                print("The Pentagon want you to finish the mission")  
+                print("No plane in the air the program will close")  
+                CatapultQueue["stop"]  = False
