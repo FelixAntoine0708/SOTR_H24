@@ -1,3 +1,9 @@
+"""
+Author: Félix-Antoine Guimont & Carl-Dominic Aubin
+Date: 15 avril 2024
+Description: Simulation d'un porte-avion commande par des touches de clavier
+"""
+##############IMPORT##############
 from threading import Thread, Semaphore
 from multiprocessing import Queue, Manager
 from time import sleep as s
@@ -5,6 +11,7 @@ from tqdm import tqdm
 import os
 import carrier
 
+##############GLOBAL##############
 sema = Semaphore()
 PlaneQueue = Queue()
 manager = Manager()
@@ -16,9 +23,7 @@ CatapultQueue["catapulte_DA_CO2"] = True
 CatapultQueue["stop"] = True
 catapultCounterFront = 2
 catapultCounterSide = 2
-
 plane_number = 0
-
 front_plane1 = 0
 front_plane2 = 0
 side_plane3 = 0
@@ -41,10 +46,8 @@ class Deck():
             for i in tqdm(range(100), colour= "GREEN",desc =f"Plane {plane_launching_front}"):
                 s(0.1)
 
-            sema.acquire()
             os.system('clear')
             print(f"\n\rPlane {plane_launching_front} launched!")
-            sema.release()
             CatapultQueue["catapulte_D_AV"] = True
 
         if catapult == "D_AV2":
@@ -53,10 +56,8 @@ class Deck():
             for i in tqdm(range(100), colour= "GREEN",desc =f"Plane {plane_launching_front2}"):
                 s(0.1)
 
-            sema.acquire()
             os.system('clear')
             print(f"\n\rPlane {plane_launching_front2} launched!")
-            sema.release()
             CatapultQueue["catapulte_D_AV2"] = True
 
         if catapult == "DA_CO3":
@@ -65,10 +66,8 @@ class Deck():
             for i in tqdm(range(100), colour= "GREEN",desc =f"Plane {plane_launching_side}"):
                 s(0.1)
 
-            sema.acquire()
             os.system('clear')
             print(f"\n\rPlane {plane_launching_side} launched!")
-            sema.release()
             CatapultQueue["catapulte_DA_CO"] = True
 
         if catapult == "DA_CO4":
@@ -76,11 +75,8 @@ class Deck():
             plane_launching_side2 = plane
             for i in tqdm(range(100), colour= "GREEN",desc =f"Plane {plane_launching_side2}"):
                 s(0.1)
-
-            sema.acquire()
             os.system('clear')
             print(f"\n\rPlane {plane_launching_side2} launched!")
-            sema.release()
             CatapultQueue["catapulte_DA_CO2"] = True 
 
     def land_plane(self):
@@ -145,6 +141,7 @@ class Deck():
         global catapultCounterFront, catapultCounterSide
 
         if key == '1': 
+            os.system('clear')
             if catapultCounterFront >= 0:
                 catapultCounterFront-=1
                 if catapultCounterFront == 1:
@@ -161,6 +158,7 @@ class Deck():
                     print("All Front Catapult is close")
                 
         if key == '2': 
+            os.system('clear')
             if catapultCounterFront <= 2:
                 catapultCounterFront+=1
                 if catapultCounterFront == 2:
@@ -177,6 +175,7 @@ class Deck():
                     print("All Front Catapult is Open")
                     
         if key == '3': 
+            os.system('clear')
             if catapultCounterSide >= 0:
                 catapultCounterSide-=1
                 if catapultCounterSide == 1:
@@ -193,6 +192,7 @@ class Deck():
                     print("All Side Catapult is close")
             
         if key == '4': 
+            os.system('clear')
             if catapultCounterSide <= 2:
                 catapultCounterSide+=1
                 if catapultCounterSide == 2:
@@ -209,6 +209,8 @@ class Deck():
                     print("All Side Catapult is Open")
 
     def listener_plane(self, keyPress):
+        global plane_number
+        
         if keyPress == 'l':
             s(0.2)
             sema.acquire()
@@ -237,9 +239,11 @@ class Deck():
             self.catapult_maintenance(self, keyPress)
 
         if keyPress == 'q':
-            if CatapultQueue["catapulte_D_AV"]  and CatapultQueue["catapulte_D_AV2"] and CatapultQueue["catapulte_DA_CO"] and CatapultQueue["catapulte_DA_CO2"]:
-                os.system('clear')
+            os.system('clear')
+            #if CatapultQueue["catapulte_D_AV"]  and CatapultQueue["catapulte_D_AV2"] and CatapultQueue["catapulte_DA_CO"] and CatapultQueue["catapulte_DA_CO2"]:
+            if plane_number > 0:
                 self.land_plane(self)
                 CatapultQueue["stop"]  = False
-                print("Sleep Time")
-         
+                print("Mission succesful - The two towers are down")
+            else:
+                print("The Pentagon want you to finish the mission")  

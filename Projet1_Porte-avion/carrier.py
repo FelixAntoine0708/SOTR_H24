@@ -26,11 +26,12 @@ planeIndentity = {}
 
 ##############FONCTION##############
 def getRekt():
+    os.system('clear')
     print("\n\nUse the key, you peasant!\n")
     
 def printKey():
     print("________________________________________\n")
-    print("\t*The Keys*\n")
+    print("\t\t*The Keys*\n")
     print("l = lauch a plane \nr = land all plane \ns = display all planes states \n1 = close front catapults for maintenance \n2 = reopen front catapults \n3 = close side catapults for maintenance \n4 = reopen side catapults \nv = display catapults states \nq = dock carrier (end program)")
     print("________________________________________")
     
@@ -66,8 +67,9 @@ def dashboard():
         time.sleep(0.01)
 
 def catapult_available():
+        os.system('clear')
         print("________________________________________\n")
-        print("Catapultes disponibles :")
+        print("Catapultes disponibles :\n")
             
         if(deck.CatapultQueue["catapulte_D_AV"]):
             print("Catapulte avant #1")
@@ -97,8 +99,11 @@ def identifierAvion(NOavion, key):
 
     if key == 's':
         os.system('clear')
-        for x in range(len(planeIndentity)):
-            print(f"Plane {x+1}, Indentity {planeIndentity[x+1]}")
+        if len(planeIndentity) > 0:
+            for x in range(len(planeIndentity)):
+                print(f"Plane {x+1}, Indentity {planeIndentity[x+1]}")
+        else:
+            print("No plane in the air")      
               
 def tourControle():    
     t1 = threading.Thread(target=dashboard)
@@ -116,11 +121,8 @@ if __name__ == "__main__":
     
     mp1 = multiprocessing.Process(target=tourControle)
     mp2 = multiprocessing.Process(target=pont)
-    #mp2 = multiprocessing.Process(target=gererCatapulte, args=semaphore1) #ajouter 2 arg pour la sémaphore
     
     mp1.start()
     mp2.start()
-    #mp2.start()
     
     mp1.join()
-    #mp1.join()
