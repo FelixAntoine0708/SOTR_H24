@@ -1,12 +1,13 @@
 import rospy
 import std_msgs.msg
-from time import sleep as s
+import time
 from os import system
 
 class game:
     def __init__(self):
-        rospy.Subscriber("/bluePoint", std_msgs.msg.Int64, self.bluePoints)
-        rospy.Subscriber("/redPoint", std_msgs.msg.Int64, self.redPoints)
+
+        rospy.Subscriber("/robot_0/Point", std_msgs.msg.Int64, self.bluePoints)
+        rospy.Subscriber("/robot_1/Point", std_msgs.msg.Int64, self.redPoints)
         self.blueTeam = {
             "shoot":0,
             "climb":0
@@ -17,14 +18,14 @@ class game:
         }
 
     def bluePoints(self, point):
-        if point.data == 2 or point.data == 1:
+        if point.data == 2:
             self.blueTeam["shoot"] += point.data
 
         if  point.data == 5:
             self.blueTeam["climb"] += point.data
 
     def redPoints(self, point):
-        if point.data == 2 or point.data == 1:
+        if point.data == 2:
             self.redTeam["shoot"] += point.data
 
         if  point.data == 5:
@@ -42,7 +43,7 @@ if __name__ == "__main__":
             while not rospy.is_shutdown():  
                 system('clear')
                 point.pointsTotal()
-                s(0.1)
+                time.sleep(0.1)
                     
         except rospy.ROSInterruptException:
             pass

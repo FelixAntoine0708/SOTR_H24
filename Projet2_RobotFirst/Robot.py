@@ -35,6 +35,14 @@ class mouvement:
         self.murDevant_1 = False
         self.ballZone_0 = False
         self.ballZone_1 = False
+        self.ballget_0 = 0
+        self.ballget_1 = 0
+        self.stade_0 = 0
+        self.stade_1 = 0
+        self.requeteLancer_0 = False
+        self.requeteLancer_1 = False
+        self.requeteBallon_1 = False
+        self.requeteBallon_0 = False
 
         # ROS publishers and subscribers
         self.move_robot_0 = rospy.Publisher('robot_0/cmd_vel', Twist, queue_size=1)
@@ -58,8 +66,8 @@ class mouvement:
         rospy.Subscriber('robot_0/climb_recu', Bool, self.climbRecu_0)
         rospy.Subscriber('robot_1/climb_recu', Bool, self.climbRecu_1)
         
-        rospy.Subscriber('robot_0/shoot_recu', Bool, self.climbRecu_0)
-        rospy.Subscriber('robot_1/shoot_recu', Bool, self.climbRecu_1)
+        rospy.Subscriber('robot_0/shoot_recu', Bool, self.tireRecu_0)
+        rospy.Subscriber('robot_1/shoot_recu', Bool, self.tireRecu_1)
         
         rospy.Subscriber("robot_1/base_pose_ground_truth", nav_msgs.msg.Odometry, self.redPosition_1)
         rospy.Subscriber("robot_0/base_pose_ground_truth", nav_msgs.msg.Odometry, self.bluePosition_0)
@@ -67,21 +75,67 @@ class mouvement:
         
     def tireRecu_0(self,tire_0):
         self.reponseTire_0 = tire_0.data
+        if(self.reponseTire_0 == True): #2points vrai
+            self.requeteLancer_0 = False
+            self.reponseTire_0 = False
+            print("compte !!!")
+        else:
+            self.requeteLancer_0 = False
+            print("manque completement !!!")
     
     def tireRecu_1(self,tire_1):
         self.reponseTire_1 = tire_1.data
-        
+        if(self.reponseTire_1 == True): #2points vrai
+            self.requeteLancer_1 = False
+            self.reponseTire_1 = False
+            print("compte !!!")
+        else:
+            self.requeteLancer_1 = False
+            print("manque completement !!!")
+      
     def ballRecu_0(self, ball_0):
         self.reponseBall_0 = ball_0.data
+        if self.reponseBall_0 == True:
+            self.requeteBallon_0 = False
+            self.reponseBall_0 = False
+            print("Ballon obtenu blue")
+            self.ballget_0+=1
+            mouvement.suscribeMove_0(self)
         
     def ballRecu_1(self, ball_1):
         self.reponseBall_1 = ball_1.data
+        if self.reponseBall_1 == True:
+            self.requeteBallon_1 = False
+            self.reponseBall_1 = False
+            print("Ballon obtenu blue")
+            self.ballget_1+=1
+            mouvement.suscribeMove_0(self)
     
     def climbRecu_0(self, climb_0):
         self.reponseClimb_0 = climb_0.data
+        if self.reponseClimb_0:
+            self.requeteGrimper_0 = False
+            self.reponseClimb_0 = 0
+            self.stade_0 += 1
+            print("Vous prenez de la hauteur")
+
+        else:
+            self.requeteGrimper_0 = False
+            self.reponseClimb_0 = 0
+            print("Vous ne montez pas")
     
     def climbRecu_1(self, climb_1):
         self.reponseClimb_1 = climb_1.data
+        if self.reponseClimb_1:
+            self.requeteGrimper_1 = False
+            self.reponseClimb_1 = 0
+            self.stade_1 += 1
+            print("Vous prenez de la hauteur")
+
+        else:
+            self.requeteGrimper_1 = False
+            self.reponseClimb_1 = 0
+            print("Vous ne montez pas")
     
     def rangeDataB_0(self, data):
 
@@ -115,16 +169,10 @@ class mouvement:
         distance = math.sqrt(math.pow(xRed, 2) + math.pow(yRed, 2))
 
         if is_red_side:
-            if distance <= 1.5:
-                self.shootR1pts = True
-                self.shootR2pts = False
-
-            elif distance <= 2.5:
-                self.shootR1pts = False
+            if distance <= 2.5:
                 self.shootR2pts = True
 
             else: 
-                self.shootR1pts = False
                 self.shootR2pts = False
         
         if yRed > 0:
@@ -151,18 +199,11 @@ class mouvement:
         distance = math.sqrt(math.pow(xBlue, 2) + math.pow(yBlue, 2))
 
         if is_blue_side:
-            if distance <= 1.5:
-                self.shootB1pts = True
-                self.shootB2pts = False
-
-            elif distance <= 2.5:
-                self.shootB1pts = False
+            if distance <= 2.5:
                 self.shootB2pts = True
             
             else:
-                self.shootB1pts = False
                 self.shootB2pts = False
-
 
         if yBlue > 0:
             if xBlue < -4.60 and yBlue > 1.20:
@@ -199,9 +240,10 @@ class mouvement:
             mouvement.unsuscribeMove_1(self)
             rate = rospy.Rate(10)   
             self.requeteGrimper_1 = True
-            self.requete_grimper_1.publish(self.requete_grimper_1)
+            self.requete_grimper_1.publish(self.requeteGrimper_1)
             rate.sleep()
-            print("Demande pour grimper en cours")
+            if self.stade_0< 3:
+                print("Demande pour grimper en cours")
             
     def grimperRobot_0(self):
         if(self.climbBzone_0 == True) and (self.requeteGrimper_0 == False):
@@ -210,53 +252,34 @@ class mouvement:
             self.requeteGrimper_0 = True
             self.requete_grimper_0.publish(self.requeteGrimper_0)
             rate.sleep()
-            print("Demande pour grimper en cours")
+            if self.stade_0< 3:
+                print("Demande pour grimper en cours")
         
     def lancerBallon_0(self):
-        if(self.shootB1pts) or (self.shootB2pts):
-            if(self.shootB1pts): #1point est faux
-                rate = rospy.Rate(10)   
-                self.requeteLancer_0 = False
-                self.requete_lancer_0.publish(self.requeteGrimper_0)
-                rate.sleep()
-                print("Il lance et ...")
-                
-            if(self.shootB2pts): #2point est vrai
-                rate = rospy.Rate(10)   
-                self.requeteLancer_0 = True
-                self.requete_lancer_0.publish(self.requeteLancer_0)
-                rate.sleep()
-                print("Il lance et ...")
+        if self.shootB2pts and self.requeteLancer_0 == False:
+            rate = rospy.Rate(10)   
+            self.requeteLancer_0 = True
+            self.requete_lancer_0.publish(self.requeteLancer_0)
+            rate.sleep()
+            print("Il lance et ...")
                 
     def lancerBallon_1(self):
-        if(self.shootR1pts) or (self.shootR2pts):
-            if(self.shootR1pts): #1point est faux
-                rate = rospy.Rate(10)   
-                self.requeteLancer_1 = False
-                self.requete_lancer_1.publish(self.requete_lancer_1)
-                rate.sleep()
-                print("Il lance et ...")
-                
-            if(self.shootR2pts): #2point est vrai
-                rate = rospy.Rate(10)   
-                self.requeteLancer_1 = True
-                self.requete_lancer_1.publish(self.requete_lancer_1)
-                rate.sleep()
-                print("Il lance et ...")
+        if self.shootR2pts and self.requeteLancer_1 == False:  
+            rate = rospy.Rate(10)   
+            self.requeteLancer_1 = True
+            self.requete_lancer_1.publish(self.requeteLancer_1)
+            rate.sleep()
+            print("Il lance et ...")
         
     def unsuscribeMove_0(self):
-        
         try:
             self.move_robot_0.unregister()
-
         except Exception as e:
             print(e)
             
     def unsuscribeMove_1(self):
-        
         try:
             self.move_robot_1.unregister()
-
         except Exception as e:
             print(e)
             
@@ -267,13 +290,11 @@ class mouvement:
         self.move_robot_1 = rospy.Publisher('robot_1/cmd_vel', Twist, queue_size=1)
 
     def publishMove(line,angu,twis,robo):
-        
         twis.linear.x = line
         twis.angular.z = angu
         robo.publish(twis)
         
     def mouvement_robot_0_1(self):
-        
         twist_0 = Twist()
         twist_1 = Twist()
         
@@ -291,13 +312,8 @@ class mouvement:
         
         self.reponseTire_0 = False
         self.reponseTire_1 = False
-        
 
-        ball_0 = 0
         ball_1 = 0
-        
-        positionClimb_0 = 0
-        positionClimb_1 = 0
 
         try:
             
@@ -326,48 +342,16 @@ class mouvement:
                             mouvement.publishMove(ZERO,-VITESSE_ANGULAIRE,twist_0,self.move_robot_0)
 
                         if keys[pygame.K_z]:
-                            if(ball_0 == 2):
+                            if(self.ballget_0 == 2):
                                 None
                             else:
                                 mouvement.chargeBallon_0(self)
                         
-                        if keys[pygame.K_x] and ball_0 > 0: #Lancer un ballon
+                        if keys[pygame.K_x] and self.ballget_0 > 0: #Lancer un ballon
                             mouvement.lancerBallon_0(self)
                         
                         if keys[pygame.K_c]:
                             mouvement.grimperRobot_0(self)
-                        
-                    else:   
-                        if(self.requeteBallon_0 == False ) and (self.requeteGrimper_0 == False) and (self.requeteLancer_0):
-                            mouvement.publishMove(ZERO,ZERO,twist_0,self.move_robot_0)
-                        else:
-                            if(self.reponseBall_0 == True):
-                                self.requeteBallon_0 = False
-                                self.reponseBall_0 = False
-                                print("Ballon obtenu blue")
-                                ball_0+=1
-                                mouvement.suscribeMove_0(self)
-                        
-                            elif(self.reponseTire_0 == True): #2points vrai
-                                self.requeteLancer_0 == False
-                                self.reponseTire_0 == False
-                                print("Il compte !!!")
-
-                            elif(self.reponseClimb_0 == 1): #reussite
-                                self.requeteGrimper_0 = False
-                                self.reponseClimb_0 = 0
-                                positionClimb_0 += 1
-                                print("Vous prenez de la hauteur")
-                            
-                            elif(self.reponseClimb_0 == 2): #defaite
-                                self.requeteGrimper_0 = False
-                                self.reponseClimb_0 = 0
-                                if(self.positionClimb_0 >= 1):
-                                    mouvement.suscribeMove_0(self)
-                                print("Vous prenez de la hauteur")
-                            
-                            else:
-                                None
                             
                     if keys[pygame.K_i] or keys[pygame.K_k] or keys[pygame.K_j] or keys[pygame.K_l] or keys[pygame.K_b] or keys[pygame.K_n] or keys[pygame.K_m]:
 
@@ -392,7 +376,7 @@ class mouvement:
                             else:
                                 mouvement.chargeBallon_1(self)
                                                             
-                        if keys[pygame.K_n] and ball_1 > 0: #Lancer un ballon
+                        if keys[pygame.K_n] and self.ballget_1 > 0: #Lancer un ballon
                             mouvement.lancerBallon_1(self)
                         
                         if keys[pygame.K_m]: #Grimper  
@@ -402,30 +386,11 @@ class mouvement:
                         if(self.requeteBallon_1 == False) and (self.requeteGrimper_1 == False):
                             mouvement.publishMove(ZERO,ZERO,twist_1,self.move_robot_1)
                         else:
-                            if(self.reponseBall_1 == True):
-                                ball_1+=1
-                                self.requeteBallon_1 = False
-                                self.reponseBall_1 = False
-                                print("Ballon obtenu orange")
-                                mouvement.suscribeMove_1(self)
-                                
-                            elif(self.reponseTire_1 == True): #2points vrai
+       
+                            if(self.reponseTire_1 == True): #2points vrai
                                 self.requeteLancer_1 == False
                                 self.reponseTire_1 == False
                                 print("Il compte !!!")
-                                
-                            elif(self.reponseClimb_1 == 1): #reussite
-                                self.requeteGrimper_1 = False
-                                self.reponseClimb_1 = 0
-                                positionClimb_1 += 1
-                                print("Vous prenez de la hauteur")
-                            
-                            elif(self.reponseClimb_1 == 2): #defaite
-                                self.requeteGrimper_1 = False
-                                self.reponseClimb_1 = 0
-                                if(self.positionClimb_1 >= 1):
-                                    mouvement.suscribeMove_1(self)
-                                print("Vous prenez de la hauteur")
 
                             else:
                                 None
@@ -447,4 +412,3 @@ if __name__ == '__main__':
         
     except rospy.ROSInterruptException:
         pass
-    
